@@ -113,14 +113,14 @@ int main(int argc, char *argv[])
 
 		// Declare data structures used to exchange information between components
 		SRef<Image> refImage, camImage, previousCamImage, kpImageCam;
-		std::vector<SRef<Keypoint>> refKeypoints;
+        std::vector<Keypoint> refKeypoints;
 		SRef<DescriptorBuffer> refDescriptors;
-		std::vector<SRef<Point3Df>> markerWorldCorners;
-		std::vector<SRef<Point2Df>> projectedMarkerCorners;
-		std::vector<SRef<Point2Df>> imagePoints_inliers;
-		std::vector<SRef<Point3Df>> worldPoints_inliers;
-		std::vector<SRef<Point2Df>> imagePoints_track;
-		std::vector<SRef<Point3Df>> worldPoints_track;
+        std::vector<Point3Df> markerWorldCorners;
+        std::vector<Point2Df> projectedMarkerCorners;
+        std::vector<Point2Df> imagePoints_inliers;
+        std::vector<Point3Df> worldPoints_inliers;
+        std::vector<Point2Df> imagePoints_track;
+        std::vector<Point3Df> worldPoints_track;
 		Transform3Df pose;
 		bool valid_pose = false;
 		bool isTrack = false;
@@ -190,11 +190,11 @@ int main(int argc, char *argv[])
 				break;
 
 			/* we declare here the Solar datastucture we will need for homography*/
-			std::vector<SRef<Keypoint>> camKeypoints; // where to store detected keypoints in ref image and camera image
+            std::vector<Keypoint> camKeypoints; // where to store detected keypoints in ref image and camera image
 			SRef<DescriptorBuffer> camDescriptors;
 			std::vector<DescriptorMatch> matches;
-			std::vector<SRef<Point2Df>> refMatched2Dpoints, camMatched2Dpoints;
-			std::vector<SRef<Point3Df>> ref3Dpoints;
+            std::vector<Point2Df> refMatched2Dpoints, camMatched2Dpoints;
+            std::vector<Point3Df> ref3Dpoints;
 
 			// Detection mode
 			if (!isTrack) // We estimate the pose by matching marker planar keypoints and current image keypoints and by estimating the pose based on planar points
@@ -253,18 +253,18 @@ int main(int argc, char *argv[])
 				{
 					imagePoints_track.clear();
 					worldPoints_track.clear();
-					std::vector<SRef<Keypoint>> newKeypoints;
+                    std::vector<Keypoint> newKeypoints;
 					// Get the projection of the corner of the marker in the current image
 					projection->project(markerWorldCorners, projectedMarkerCorners, pose);
 #ifndef NDEBUG
-					overlay2DComponent->drawContour(projectedMarkerCorners, kpImageCam);
+                    overlay2DComponent->drawContour(projectedMarkerCorners, kpImageCam);
 #endif				
 					// Detect the keypoints within the contours of the marker defined by the projected corners
 					kpDetectorRegion->detect(previousCamImage, projectedMarkerCorners, newKeypoints);
 
 					if (newKeypoints.size() > updateTrackedPointThreshold) {
 						for (auto keypoint : newKeypoints)
-							imagePoints_track.push_back(xpcf::utils::make_shared<Point2Df>(keypoint->getX(), keypoint->getY()));
+                            imagePoints_track.push_back(Point2Df(keypoint.getX(), keypoint.getY()));
 
 						// get back the 3D positions of the detected keypoints in world space
 						unprojection->unproject(imagePoints_track, worldPoints_track, pose);
@@ -279,8 +279,8 @@ int main(int argc, char *argv[])
 
 				// Tracking mode
 				if (isTrack) {
-					std::vector<SRef<Point2Df>> trackedPoints, pts2D;
-					std::vector<SRef<Point3Df>> pts3D;
+                    std::vector<Point2Df> trackedPoints, pts2D;
+                    std::vector<Point3Df> pts3D;
 					std::vector<unsigned char> status;
 					std::vector<float> err;
 

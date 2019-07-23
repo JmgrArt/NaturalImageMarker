@@ -125,9 +125,9 @@ int main(int argc, char *argv[])
 #ifndef NDEBUG
         SRef<Image> debugCamImage;
 #endif
-        std::vector<SRef<Keypoint>> refKeypoints;
+        std::vector<Keypoint> refKeypoints;
         SRef<DescriptorBuffer> refDescriptors;
-        std::vector<SRef<Point3Df>> markerWorldCorners;
+        std::vector<Point3Df> markerWorldCorners;
 
         // Declare Buffers used to exchange data between tasks
         xpcf::DropBuffer<SRef<Image>>   m_dropBufferCamImageForDetection;
@@ -214,14 +214,14 @@ int main(int argc, char *argv[])
                                                &m_dropBufferCamImageForDetection, &m_dropBufferPoseForTracking, &m_dropBufferPoseForDisplay,
                                                &kpDetector, &descriptorExtractor, &matcher, &basicMatchesFilter, &geomMatchesFilter, &keypointsReindexer, &img_mapper, &poseEstimationPlanarDetection](){
             SRef<Image> camImage;
-            std::vector<SRef<Keypoint>> camKeypoints;
+            std::vector<Keypoint> camKeypoints;
             SRef<DescriptorBuffer> camDescriptors;
             std::vector<DescriptorMatch> matches;
-            std::vector<SRef<Point2Df>> refMatched2Dpoints, camMatched2Dpoints;
-            std::vector<SRef<Point3Df>> ref3Dpoints;
+            std::vector<Point2Df> refMatched2Dpoints, camMatched2Dpoints;
+            std::vector<Point3Df> ref3Dpoints;
             Transform3Df pose;
-            std::vector<SRef<Point2Df>> imagePoints_inliers;
-            std::vector<SRef<Point3Df>> worldPoints_inliers;
+            std::vector<Point2Df> imagePoints_inliers;
+            std::vector<Point3Df> worldPoints_inliers;
 
             if (!m_dropBufferCamImageForDetection.tryPop(camImage))
                 return;
@@ -289,8 +289,8 @@ int main(int argc, char *argv[])
         // Variable shared for tracking
         SRef<Image> previousCamImage;
         Transform3Df previousPose;
-        std::vector<SRef<Point2Df>> imagePoints_inliers;
-        std::vector<SRef<Point3Df>> worldPoints_inliers;
+        std::vector<Point2Df> imagePoints_inliers;
+        std::vector<Point3Df> worldPoints_inliers;
 
         std::function<void(void)> tracking = [&markerWorldCorners, &previousCamImage, &previousPose, &imagePoints_inliers, &worldPoints_inliers,
 #ifndef NDEBUG
@@ -301,15 +301,15 @@ int main(int argc, char *argv[])
         {
             SRef<Image> camImage;
             std::pair<SRef<Image>, Transform3Df> poseImageFromDetection;
-            std::vector<SRef<Keypoint>> newKeypoints;
-            std::vector<SRef<Point2Df>> projectedMarkerCorners, trackedPoints, pts2D;
-            std::vector<SRef<Point3Df>> pts3D;
+            std::vector<Keypoint> newKeypoints;
+            std::vector<Point2Df> projectedMarkerCorners, trackedPoints, pts2D;
+            std::vector<Point3Df> pts3D;
             std::vector<unsigned char> status;
             std::vector<float> err;
             Transform3Df pose;
             bool needNewTrackedPoints = false;
 #ifndef NDEBUG
-            std::vector<SRef<Point2Df>> trackedKeypoints;
+            std::vector<Point2Df> trackedKeypoints;
 #endif
 
             if (!m_dropBufferCamImageForTracking.tryPop(camImage))
@@ -341,7 +341,7 @@ int main(int argc, char *argv[])
                 LOG_DEBUG("New keypoint extraction for tracking");
                 imagePoints_inliers.clear();
                 worldPoints_inliers.clear();
-                std::vector<SRef<Keypoint>> newKeypoints;
+                std::vector<Keypoint> newKeypoints;
                 // Get the projection of the corner of the marker in the current image
                 projection->project(markerWorldCorners, projectedMarkerCorners, previousPose);
 
@@ -350,7 +350,7 @@ int main(int argc, char *argv[])
 
 				if (newKeypoints.size() > updateTrackedPointThreshold) {
 					for (auto keypoint : newKeypoints)
-						imagePoints_inliers.push_back(xpcf::utils::make_shared<Point2Df>(keypoint->getX(), keypoint->getY()));
+                        imagePoints_inliers.push_back(Point2Df(keypoint.getX(), keypoint.getY()));
 
 					// Get back the 3D positions of the detected keypoints in world space
 					unprojection->unproject(imagePoints_inliers, worldPoints_inliers, previousPose);
