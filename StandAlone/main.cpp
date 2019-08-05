@@ -263,8 +263,9 @@ int main(int argc, char *argv[])
 					kpDetectorRegion->detect(previousCamImage, projectedMarkerCorners, newKeypoints);
 
 					if (newKeypoints.size() > updateTrackedPointThreshold) {
+                        imagePoints_track.reserve(newKeypoints.size());
 						for (auto keypoint : newKeypoints)
-                            imagePoints_track.push_back(Point2Df(keypoint.getX(), keypoint.getY()));
+                            imagePoints_track.emplace_back(keypoint.getPosition().x(), keypoint.getPosition().y());
 
 						// get back the 3D positions of the detected keypoints in world space
 						unprojection->unproject(imagePoints_track, worldPoints_track, pose);
@@ -291,8 +292,8 @@ int main(int argc, char *argv[])
 					{
 						if (status[i])
 						{
-							pts2D.push_back(trackedPoints[i]);
-							pts3D.push_back(worldPoints_track[i]);
+                            pts2D.emplace_back(trackedPoints[i]);
+                            pts3D.emplace_back(worldPoints_track[i]);
 						}
 					}
 
@@ -348,7 +349,7 @@ int main(int argc, char *argv[])
 	}
 	catch (xpcf::Exception e)
 	{
-		LOG_ERROR("The following exception has been catch {}", e.what());
+        LOG_ERROR("The following exception has been catched {}", e.what());
 	}
 
 	return 0;
